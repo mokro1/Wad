@@ -13,14 +13,30 @@
 		Wad.fn = Wad.prototype = {
 			constructor: Wad,
 			length:0,
-			init: function ( selector ){
-				//如果传入的是 0，''，null,undefined
-				if ( !selector ) return this;
-				
-				//获取元素，设置this
-				push.apply( this , Wad.select( selector ) );
-				
-			}	
+			init: function ( selector ) {
+
+                  // 传入的如果是 0, '', nulll, undefined
+                  if ( !selector ) return this;
+
+                  // 获得元素, 设置 this 
+                  // push.apply( this, Wad.select( selector ));
+                  if ( typeof selector === 'string' ) {
+                  // 选择器 或 html 字符串
+                  // '   <div></div>'
+                  // 第一个非空白字符, 如果是 < 那么就是标签, 否则就是选择器
+                  // 1> trim, charAt( 0 ) == '<'
+                  // 2> 正则表达式
+                  // var r = /^\s*</; // 匹配第一个非空白字符为 < 的正则表达式
+                        if ( /^\s*</.test( selector ) ) {
+                        // html 格式的字符串
+                        push.apply( this, Wad.parseHTML( selector ));
+                        } else {
+                        // 选择器
+                        push.apply( this, Wad.select( selector ));
+                        }
+                      return this;
+                    }
+            }	
 		};
 		//共享原型
 		Wad.fn.init.prototype = Wad.fn;
