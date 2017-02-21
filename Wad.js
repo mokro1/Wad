@@ -36,7 +36,45 @@
                         }
                       return this;
                     }
-            }	
+            
+				// dom
+				if ( selector.nodeType ) {
+					// 将该 dom 元素转换成 Wad 对象
+					this[ 0 ] = selector;
+					this.length = 1;
+					return this;
+				}
+
+				// Wad
+				if ( selector.constructor == Wad ) {
+				   // return selector; // 在课堂中没有任何问题
+
+				   // 保留 this , 但是需要利用 selector 构造一个新的 Wad 对象
+				   push.apply( this, selector );
+				   return this;
+				}
+				//判断是不是 dom 元素  因为之后 dom 元素才会有 nodetype属性
+				if ( selector.nodeType ) {
+					//把这个dom sele伪数组 赋值个 实例this 上 存在this[0]上
+					this[ 0 ] = selector;
+					this.length = 1;
+					return this;
+				}
+				//判断 是不是 jq 对象
+				// 如果实例的 构造器是 F 那么这个对象就是F的实例
+				if ( selector.constructor = Wad ) {
+					// 把 伪数组 对象 依次添加到 实例this 中
+					push.apply( this, selector );
+					return this;
+				}
+				//判断是不是第一个 函数
+				if ( typeof selector == "function" ) {
+					//如果传入一个 参数 就是 函数 我们就需要 让他最后执行，把其他的 资源加载完毕
+					//只有这样 函数内的 调用 才不会出错，所以 jq 中 把它当成 window.load 来处理 ，所以
+					//我们 添加一个事件 就能解决  我们需要的 情况
+					window.addEventListener( "load", selector );
+				}				
+		    }			
 		};
 		//共享原型
 		Wad.fn.init.prototype = Wad.fn;
@@ -60,6 +98,9 @@
 			isArrayLike: function ( obj ) {
 				if ( object.prototype.tostring.call( obj ) == '[object Array]') {
 					return true;
+				}
+				if ( typeof obj == "string" || typeof obj == "function" ){
+					return false;
 				}
 				var length = 'length' in obj && obj.length;
 				return typeof length === 'number' && length >= 0;
@@ -97,7 +138,8 @@
 						}
 					}
 				}
-				return newArr;
+				// 扁平化处理
+                return newArr.concat.apply( [], newArr );
 			},
 	    });
 		
@@ -128,12 +170,38 @@
 				}
 			},
 			first: function (  ) {
-                var iobj = this.constructor();
-                var dom = this.get( 0 );
-                iobj[ 0 ] = dom;
-                iobj.length = 1;
-                return iobj;
-            }
+                //var iobj = this.constructor();
+                //var dom = this.get( 0 );
+                //iobj[ 0 ] = dom;
+                //iobj.length = 1;
+                //return iobj;
+				return this.eq( 0 );
+            },
+			eq: function ( index ){
+				//获得对象，并构造Wad对象
+				var iobj = this.constructor( );
+				if ( index == null ) return iobj;
+				var dom = this.get( index );
+				if ( dom ){
+					iobj[ 0 ] = dom;
+                    iobj.length = 1; // 由于 iobj 是一个伪数组, 在 元素后应该长度 +1
+				}
+				return iobj;
+			},
+			last: function ( index ) {
+				return this.eq( -1 );
+			},
+			pushStask: function( array ){
+				// this 以前的 Itcast 对象
+                // 栈结构
+                var tmp = this.constructor();
+                push.apply( tmp , array );
+                tmp.prevObject = this;
+                return tmp;				
+			},
+			end: function (){
+				return  this.prevObject || this.constructor();
+			}
 		});
 		
 	
